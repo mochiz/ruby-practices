@@ -39,31 +39,20 @@ end
 point = 0
 
 frames.each_with_index do |frame, index|
-  next_frame = frames[index + 1]
-  add_point = if index > 8
-                frame.sum
-              elsif frame[0] == 10
-                pp 'strike'
-                # ストライクの場合は次の2投分を加算する
-                if next_frame
-                  if next_frame[0] == 10 && frames[index + 2]
-                    frame.sum + next_frame.sum + frames[index + 2][0]
-                  else
-                    frame.sum + next_frame.sum
-                  end
-                else
-                  frame.sum
-                end # strike
-              elsif frame.sum == 10 # spare
-                pp 'spare'
-                # スペアの場合は次の1投分を加算する
-                frame.sum + next_frame[0]
-              else
-                frame.sum
-              end
+  # 10フレーム以降は単純に加算する
+  next point += frame.sum if index + 1 >= 10
+  # スペアでもストライクでもない場合は単純に加算する
+  next point += frame.sum if frame[0] != 10 && frame.sum != 10
+  # スペアの場合は自フレームの得点と次フレームの1投目を加算する
+  next point += frame.sum + frames[index + 1][0] if frame[0] != 10
 
-  pp add_point
-  point += add_point
-  pp point
+  # ストライクの場合は次の2投分を加算する
+  point +=
+    # 次フレームがストライクの場合は、次フレーム+その次のフレームの1投分を加算する
+    if frames[index + 1][0] == 10
+      frame.sum + frames[index + 1].sum + frames[index + 2][0]
+    else
+      frame.sum + frames[index + 1].sum
+    end
 end
 puts point
