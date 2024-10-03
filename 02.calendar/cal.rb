@@ -27,10 +27,11 @@ month = arg_month&.to_i || Date.today.month
 
 start_date = Date.new(year, month, 1)
 end_date = Date.new(year, month, -1)
+dates = (start_date..end_date).to_a
 
-puts "#{month}月 #{year}"
-puts '日 月 火 水 木 金 土'
-# TODO: 表示を調整する
+puts "#{month}月 #{year}".center(21)
+puts ' 日 月 火 水 木 金 土 '
+print ' '.rjust(3) * start_date.wday # 月の初日の曜日まで空白で埋め
 (start_date..end_date).each do |day|
   print day.day.to_s.rjust(3)
   print "\n" if day.saturday?
