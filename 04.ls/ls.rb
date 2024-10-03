@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
 
 # 列数を指定する
 COLUMN_SIZE = 3
