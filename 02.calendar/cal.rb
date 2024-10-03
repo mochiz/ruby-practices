@@ -36,3 +36,4 @@ print ' '.rjust(3) * start_date.wday # 月の初日の曜日まで空白で埋�
   print day.day.to_s.rjust(3)
   print "\n" if day.saturday?
 end
+print "\n"
