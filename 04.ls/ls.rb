@@ -7,7 +7,7 @@ COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
 children = Dir.children(__dir__)
-children.sort!.reject! { |child| child.start_with?('.') }
+children = children.sort.reject! { |child| child.start_with?('.') }
 
 # 文字幅調整用に最大文字数を取得する
 padding_size = children.map(&:length).max + PADDING_MARGIN
