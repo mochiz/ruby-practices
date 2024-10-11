@@ -7,8 +7,6 @@ COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
 children = Dir.children(__dir__)
-# 大文字の昇順 > 小文字の昇順に並び替える
-#   ls の挙動に合わせて .から始まるファイルを除外する
 children.sort!.reject! { |child| child.start_with?('.') }
 
 # 文字幅調整用に最大文字数を取得する
