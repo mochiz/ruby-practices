@@ -4,7 +4,7 @@
 # 列数を指定する
 COLUMN_SIZE = 3
 # 文字幅調整用のマージン
-PADDING_MARGIN = 2
+PADDING_MARGIN = 1
 
 children = Dir.children(__dir__)
 # 大文字の昇順 > 小文字の昇順に並び替える
