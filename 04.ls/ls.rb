@@ -6,19 +6,19 @@ COLUMN_SIZE = 3
 # 文字幅調整用のマージン
 PADDING_MARGIN = 1
 
-children = Dir.children(__dir__)
-children = children.sort.reject! { |child| child.start_with?('.') }
+items = Dir.children(__dir__)
+items = items.sort.reject! { |item| item.start_with?('.') }
 
 # 文字幅調整用に最大文字数を取得する
-padding_size = children.map(&:length).max + PADDING_MARGIN
+padding_size = items.map(&:length).max + PADDING_MARGIN
 
 # 配列がCOMUNS_SIZEの倍数になるように空文字で埋める
-lack_count = children.length % COLUMN_SIZE
-children.concat([''] * (COLUMN_SIZE - lack_count)) if lack_count.positive?
+lack_count = items.length % COLUMN_SIZE
+items.concat([''] * (COLUMN_SIZE - lack_count)) if lack_count.positive?
 
 # 行列を入れ替えた二次元配列を作成する
-row_size = (children.length / COLUMN_SIZE)
-matrix = children.each_slice(row_size).to_a.transpose
+row_size = (items.length / COLUMN_SIZE)
+matrix = items.each_slice(row_size).to_a.transpose
 matrix.each do |row|
   row.each do |item|
     print item.ljust(padding_size)
