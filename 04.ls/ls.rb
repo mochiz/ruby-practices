@@ -17,8 +17,8 @@ lack_count = children.length % COLUMN_SIZE
 children.concat([''] * (COLUMN_SIZE - lack_count)) if lack_count.positive?
 
 # 行列を入れ替えた二次元配列を作成する
-divider = (children.length / COLUMN_SIZE)
-matrix = children.each_slice(divider).to_a.transpose
+row_size = (children.length / COLUMN_SIZE)
+matrix = children.each_slice(row_size).to_a.transpose
 matrix.each do |row|
   row.each do |item|
     print item.ljust(padding_size)
