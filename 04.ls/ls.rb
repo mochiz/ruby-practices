@@ -14,8 +14,8 @@ items.concat([''] * (COLUMN_SIZE - lack_count)) if lack_count.positive?
 
 row_size = (items.length / COLUMN_SIZE)
 matrix = items.each_slice(row_size).to_a.transpose
-matrix.each do |row|
-  row.each do |item|
+matrix.each do |row_items|
+  row_items.each do |item|
     print item.ljust(padding_size)
   end
   puts
