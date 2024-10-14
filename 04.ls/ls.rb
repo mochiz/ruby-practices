@@ -4,8 +4,8 @@
 COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
-items = Dir.children(__dir__)
-items = items.sort.reject! { |item| item.start_with?('.') }
+file_names = Dir.children(__dir__)
+items = file_names.sort.reject { |item| item.start_with?('.') }
 
 padding_size = items.map(&:length).max + PADDING_MARGIN
 
