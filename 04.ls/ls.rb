@@ -1,12 +1,23 @@
 #! /usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'optparse'
+
 COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
-file_names = Dir.children(__dir__)
-sorted_file_names = file_names.sort.reject { |file_name| file_name.start_with?('.') }
+options = ARGV.getopts('a')
 
+def get_sorted_file_names(options)
+  file_names = Dir.entries(__dir__)
+  if options['a']
+    file_names.sort
+  else
+    file_names.sort.reject { |file_name| file_name.start_with?('.') }
+  end
+end
+
+sorted_file_names = get_sorted_file_names(options)
 padding_size = sorted_file_names.map(&:length).max + PADDING_MARGIN
 
 lack_count = sorted_file_names.length % COLUMN_SIZE
