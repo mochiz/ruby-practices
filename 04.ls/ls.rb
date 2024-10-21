@@ -6,10 +6,9 @@ require 'optparse'
 COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
-argv_options = ARGV.getopts('a')
-
-def main(options = {})
-  file_names = file_names(options)
+def main
+  options = ARGV.getopts('a')
+  file_names = generate_file_names(options)
 
   padding_size = file_names.map(&:length).max + PADDING_MARGIN
 
@@ -26,14 +25,9 @@ def main(options = {})
   end
 end
 
-def file_names(options = {})
-  file_names = Dir.entries(__dir__)
-  sorted_file_names = file_names.sort
-  if options['a']
-    sorted_file_names
-  else
-    sorted_file_names.reject { |file_name| file_name.start_with?('.') }
-  end
+def generate_file_names(options = {})
+  file_names = Dir.entries(__dir__).sort
+  options['a'] ? file_names : file_names.reject { |file_name| file_name.start_with?('.') }
 end
 
-main(argv_options)
+main
