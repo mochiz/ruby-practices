@@ -8,7 +8,7 @@ PADDING_MARGIN = 1
 
 def main
   options = ARGV.getopts('a')
-  file_names = generate_file_names(options)
+  file_names = search_file_names(options)
 
   padding_size = file_names.map(&:length).max + PADDING_MARGIN
 
@@ -25,7 +25,7 @@ def main
   end
 end
 
-def generate_file_names(options = {})
+def search_file_names(options = {})
   file_names = Dir.entries(__dir__).sort
   options['a'] ? file_names : file_names.reject { |file_name| file_name.start_with?('.') }
 end
