@@ -7,7 +7,7 @@ COLUMN_SIZE = 3
 PADDING_MARGIN = 1
 
 def main
-  options = ARGV.getopts('a')
+  options = ARGV.getopts('ar')
   file_names = search_file_names(options)
 
   padding_size = file_names.map(&:length).max + PADDING_MARGIN
@@ -27,7 +27,8 @@ end
 
 def search_file_names(options = {})
   file_names = Dir.entries(__dir__).sort
-  options['a'] ? file_names : file_names.reject { |file_name| file_name.start_with?('.') }
+  filtered_file_names = options['a'] ? file_names : file_names.reject { |file_name| file_name.start_with?('.') }
+  options['r'] ? filtered_file_names.reverse : filtered_file_names
 end
 
 main
