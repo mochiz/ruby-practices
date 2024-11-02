@@ -20,11 +20,9 @@ def search_file_names(options = {})
 end
 
 def render_table(file_names)
-  prepared_file_names = prepare_file_names_for_table(file_names)
-  padding_size = prepared_file_names.map(&:length).max + PADDING_MARGIN
-  row_size = (prepared_file_names.length / COLUMN_SIZE)
-  table = prepared_file_names.each_slice(row_size).to_a.transpose
-  table.each do |row_file_names|
+  padding_size = file_names.map(&:length).max + PADDING_MARGIN
+  file_name_table = generate_file_name_table(file_names)
+  file_name_table.each do |row_file_names|
     row_file_names.each do |file_name|
       print file_name.ljust(padding_size)
     end
@@ -32,63 +30,62 @@ def render_table(file_names)
   end
 end
 
-def prepare_file_names_for_table(file_names)
+def generate_file_name_table(file_names)
   lack_count = file_names.length % COLUMN_SIZE
-  file_names.concat([''] * (COLUMN_SIZE - lack_count)) if lack_count.positive?
-  file_names
+  filled_file_names = lack_count.positive? ? file_names.concat([''] * (COLUMN_SIZE - lack_count)) : file_names
+  row_size = (filled_file_names.length / COLUMN_SIZE)
+  filled_file_names.each_slice(row_size).to_a.transpose
 end
 
 def render_list(file_names)
-  file_stats = file_names.map { |file_name| { name: file_name, stat: File.stat(file_name) } }
-  rjust_options = build_rjust_options(file_stats)
-  file_stats.each do |file_stat|
-    puts build_file_stat_text(file_stat, rjust_options)
+  file_stats = file_names.inject({}) { |hash, file_name| hash[file_name] = File.stat(file_name); hash }
+  width_options = generate_width_options(file_stats.values)
+  file_stats.each do |file_name, file_stat|
+    puts generate_file_detail(file_name, file_stat, width_options)
   end
   puts
 end
 
-def build_rjust_options(file_stats)
+def generate_width_options(file_stats)
   {
     owner: max_owner_length(file_stats),
-    group: max_group_length(file_stats) + 1,
-    size: max_size_length(file_stats) + 1
+    group: max_group_length(file_stats) + PADDING_MARGIN,
+    size: max_size_length(file_stats) + PADDING_MARGIN
   }
 end
 
 def max_owner_length(stats)
-  stats.map { |stat| Etc.getpwuid(stat[:stat].uid).name.length }.max
+  stats.map { |stat| Etc.getpwuid(stat.uid).name.length }.max
 end
 
 def max_group_length(stats)
-  stats.map { |stat| Etc.getgrgid(stat[:stat].gid).name.length }.max
+  stats.map { |stat| Etc.getgrgid(stat.gid).name.length }.max
 end
 
 def max_size_length(stats)
-  stats.map { |stat| stat[:stat].size.to_s.length }.max
+  stats.map { |stat| stat.size.to_s.length }.max
 end
 
-def build_file_stat_text(file_stat, rjust_options)
-  name = file_stat[:name]
-  stat = file_stat[:stat]
+def generate_file_detail(file_name, file_stat, width_options)
   [
-    build_permission_text(stat),
-    stat.nlink.to_s.rjust(2),
-    build_file_info(stat, rjust_options),
-    stat.mtime.strftime('%m %d %H:%M'),
-    name
+    generate_permission(file_stat),
+    file_stat.nlink.to_s.rjust(2),
+    generate_file_info(file_stat, width_options),
+    file_stat.mtime.strftime('%m %d %H:%M'),
+    file_name
   ].join(' ')
 end
 
-def build_permission_text(stat)
+def generate_permission(stat)
   permission_text = stat.mode.to_s(8)[-3..].chars.map { |c| permission_char(c) }.join
   file_type_char(stat.ftype) + permission_text
 end
 
-def build_file_info(stat, rjust_options)
+def generate_file_info(stat, width_options)
   [
-    Etc.getpwuid(stat.uid).name.rjust(rjust_options[:owner]),
-    Etc.getgrgid(stat.gid).name.rjust(rjust_options[:group]),
-    stat.size.to_s.rjust(rjust_options[:size])
+    Etc.getpwuid(stat.uid).name.rjust(width_options[:owner]),
+    Etc.getgrgid(stat.gid).name.rjust(width_options[:group]),
+    stat.size.to_s.rjust(width_options[:size])
   ].join(' ')
 end
 
