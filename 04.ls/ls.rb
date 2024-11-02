@@ -40,10 +40,11 @@ end
 def render_list(file_names)
   file_stats = file_names.inject({}) { |hash, file_name| hash[file_name] = File.stat(file_name); hash }
   width_options = generate_width_options(file_stats.values)
+  total_blocks = file_stats.values.sum(&:blocks)
+  puts "total #{total_blocks}"
   file_stats.each do |file_name, file_stat|
     puts generate_file_detail(file_name, file_stat, width_options)
   end
-  puts
 end
 
 def generate_width_options(file_stats)
