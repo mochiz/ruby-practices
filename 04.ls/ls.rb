@@ -38,7 +38,7 @@ def generate_file_name_table(file_names)
 end
 
 def render_list(file_names)
-  file_stats = file_names.inject({}) { |hash, file_name| hash[file_name] = File.stat(file_name); hash }
+  file_stats = file_names.each_with_object({}) { |file_name, result| result[file_name] = File.stat(file_name) }
   width_options = generate_width_options(file_stats.values)
   total_blocks = file_stats.values.sum(&:blocks)
   puts "total #{total_blocks}"
@@ -49,45 +49,48 @@ end
 
 def generate_width_options(file_stats)
   {
-    owner: max_owner_length(file_stats),
-    group: max_group_length(file_stats) + PADDING_MARGIN,
-    size: max_size_length(file_stats) + PADDING_MARGIN
+    nlink_width: max_nlink_length(file_stats) + PADDING_MARGIN,
+    owner_width: max_owner_length(file_stats) + PADDING_MARGIN,
+    group_width: max_group_length(file_stats),
+    size_width: max_size_length(file_stats) + PADDING_MARGIN
   }
 end
 
-def max_owner_length(stats)
-  stats.map { |stat| Etc.getpwuid(stat.uid).name.length }.max
+def max_nlink_length(file_stats)
+  file_stats.map { |file_stat| file_stat.nlink.to_s.length }.max
 end
 
-def max_group_length(stats)
-  stats.map { |stat| Etc.getgrgid(stat.gid).name.length }.max
+def max_owner_length(file_stats)
+  file_stats.map { |file_stat| Etc.getpwuid(file_stat.uid).name.length }.max
 end
 
-def max_size_length(stats)
-  stats.map { |stat| stat.size.to_s.length }.max
+def max_group_length(file_stats)
+  file_stats.map { |file_stat| Etc.getgrgid(file_stat.gid).name.length }.max
+end
+
+def max_size_length(file_stats)
+  file_stats.map { |file_stat| file_stat.size.to_s.length }.max
 end
 
 def generate_file_detail(file_name, file_stat, width_options)
-  [
-    generate_permission(file_stat),
-    file_stat.nlink.to_s.rjust(2),
-    generate_file_info(file_stat, width_options),
-    file_stat.mtime.strftime('%m %d %H:%M'),
-    file_name
-  ].join(' ')
+  permission = generate_permission(file_stat)
+  nlink = file_stat.nlink.to_s.rjust(width_options[:nlink_width])
+  file_info = generate_file_info(file_stat, width_options)
+  mtime = file_stat.mtime.strftime('%_m %_d %H:%M')
+  "#{permission} #{nlink} #{file_info} #{mtime} #{file_name}"
 end
 
-def generate_permission(stat)
-  permission_text = stat.mode.to_s(8)[-3..].chars.map { |c| permission_char(c) }.join
-  file_type_char(stat.ftype) + permission_text
+def generate_permission(file_stat)
+  file_type = file_type_char(file_stat.ftype)
+  permission = file_stat.mode.to_s(8)[-3..].chars.map { |c| permission_char(c) }.join
+  "#{file_type}#{permission}"
 end
 
-def generate_file_info(stat, width_options)
-  [
-    Etc.getpwuid(stat.uid).name.rjust(width_options[:owner]),
-    Etc.getgrgid(stat.gid).name.rjust(width_options[:group]),
-    stat.size.to_s.rjust(width_options[:size])
-  ].join(' ')
+def generate_file_info(file_stat, width_options)
+  owner = Etc.getpwuid(file_stat.uid).name.ljust(width_options[:owner_width])
+  group = Etc.getgrgid(file_stat.gid).name.ljust(width_options[:group_width])
+  size = file_stat.size.to_s.rjust(width_options[:size_width])
+  "#{owner} #{group} #{size}"
 end
 
 def file_type_char(ftype)
