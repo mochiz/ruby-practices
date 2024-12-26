@@ -103,17 +103,16 @@ def file_type_char(ftype)
 end
 
 def permission_char(char)
-  case char
-  when '0' then '---'
-  when '1' then '--x'
-  when '2' then '-w-'
-  when '3' then '-wx'
-  when '4' then 'r--'
-  when '5' then 'r-x'
-  when '6' then 'rw-'
-  when '7' then 'rwx'
-  else ''
-  end
+  {
+    '0' => '---',
+    '1' => '--x',
+    '2' => '-w-',
+    '3' => '-wx',
+    '4' => 'r--',
+    '5' => 'r-x',
+    '6' => 'rw-',
+    '7' => 'rwx'
+  }[char]
 end
 
 main
