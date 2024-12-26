@@ -38,59 +38,67 @@ def generate_file_name_table(file_names)
 end
 
 def render_list(file_names)
-  file_stats = file_names.each_with_object({}) { |file_name, result| result[file_name] = File.stat(file_name) }
-  width_options = generate_width_options(file_stats.values)
-  total_blocks = file_stats.values.sum(&:blocks)
+  file_details = generate_file_details(file_names)
+  width_options = generate_width_options(file_details)
+  total_blocks = file_details.map { |file_detail| file_detail[:stat] }.sum(&:blocks)
   puts "total #{total_blocks}"
-  file_stats.each do |file_name, file_stat|
-    puts generate_file_detail(file_name, file_stat, width_options)
+  file_details.each do |file_detail|
+    puts generate_file_detail_text(file_detail, width_options)
   end
 end
 
-def generate_width_options(file_stats)
+def generate_file_details(file_names)
+  file_names.map do |file_name|
+    file_stat = File.stat(file_name)
+    {
+      name: file_name,
+      stat: file_stat,
+      owner: Etc.getpwuid(file_stat.uid).name,
+      group: Etc.getgrgid(file_stat.gid).name
+    }
+  end
+end
+
+def generate_width_options(file_details)
   {
-    nlink_width: max_nlink_length(file_stats) + PADDING_MARGIN,
-    owner_width: max_owner_length(file_stats) + PADDING_MARGIN,
-    group_width: max_group_length(file_stats),
-    size_width: max_size_length(file_stats) + PADDING_MARGIN
+    nlink: max_nlink_length(file_details) + PADDING_MARGIN,
+    owner: max_owner_length(file_details) + PADDING_MARGIN,
+    group: max_group_length(file_details),
+    size: max_size_length(file_details) + PADDING_MARGIN
   }
 end
 
-def max_nlink_length(file_stats)
-  file_stats.map { |file_stat| file_stat.nlink.to_s.length }.max
+def max_nlink_length(file_details)
+  file_details.map { |file_detail| file_detail[:stat].nlink.to_s.length }.max
 end
 
-def max_owner_length(file_stats)
-  file_stats.map { |file_stat| Etc.getpwuid(file_stat.uid).name.length }.max
+def max_owner_length(file_details)
+  file_details.map { |file_detail| file_detail[:owner].length }.max
 end
 
-def max_group_length(file_stats)
-  file_stats.map { |file_stat| Etc.getgrgid(file_stat.gid).name.length }.max
+def max_group_length(file_details)
+  file_details.map { |file_detail| file_detail[:group].length }.max
 end
 
-def max_size_length(file_stats)
-  file_stats.map { |file_stat| file_stat.size.to_s.length }.max
+def max_size_length(file_details)
+  file_details.map { |file_detail| file_detail[:stat].size.to_s.length }.max
 end
 
-def generate_file_detail(file_name, file_stat, width_options)
-  permission = generate_permission(file_stat)
-  nlink = file_stat.nlink.to_s.rjust(width_options[:nlink_width])
-  file_info = generate_file_info(file_stat, width_options)
-  mtime = file_stat.mtime.strftime('%_m %_d %H:%M')
-  "#{permission} #{nlink} #{file_info} #{mtime} #{file_name}"
+def generate_file_detail_text(file_detail, width_options)
+  permission = generate_permission(file_detail[:stat])
+  nlink = generate_nlink_text(file_detail, width_options)
+  owner = generate_owner_text(file_detail, width_options)
+  group = generate_group_text(file_detail, width_options)
+  size = generate_size_text(file_detail, width_options)
+  mtime = generate_mtime_text(file_detail)
+  file_name = file_detail[:name]
+  "#{permission} #{nlink} #{owner} #{group} #{size} #{mtime} #{file_name}"
 end
 
 def generate_permission(file_stat)
   file_type = file_type_char(file_stat.ftype)
   permission = file_stat.mode.to_s(8)[-3..].chars.map { |c| permission_char(c) }.join
   "#{file_type}#{permission}"
-end
-
-def generate_file_info(file_stat, width_options)
-  owner = Etc.getpwuid(file_stat.uid).name.ljust(width_options[:owner_width])
-  group = Etc.getgrgid(file_stat.gid).name.ljust(width_options[:group_width])
-  size = file_stat.size.to_s.rjust(width_options[:size_width])
-  "#{owner} #{group} #{size}"
 end
 
 def file_type_char(ftype)
@@ -113,6 +121,26 @@ def permission_char(char)
     '6' => 'rw-',
     '7' => 'rwx'
   }[char]
+end
+
+def generate_nlink_text(file_detail, width_options)
+  file_detail[:stat].nlink.to_s.rjust(width_options[:nlink])
+end
+
+def generate_owner_text(file_detail, width_options)
+  file_detail[:owner].ljust(width_options[:owner])
+end
+
+def generate_group_text(file_detail, width_options)
+  file_detail[:group].ljust(width_options[:group])
+end
+
+def generate_size_text(file_detail, width_options)
+  file_detail[:stat].size.to_s.rjust(width_options[:size])
+end
+
+def generate_mtime_text(file_detail)
+  file_detail[:stat].mtime.strftime('%_m %_d %H:%M')
 end
 
 main
