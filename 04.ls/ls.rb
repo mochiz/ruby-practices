@@ -6,6 +6,16 @@ require 'etc'
 
 COLUMN_SIZE = 3
 PADDING_MARGIN = 1
+PERMISSIONS = {
+  '0' => '---',
+  '1' => '--x',
+  '2' => '-w-',
+  '3' => '-wx',
+  '4' => 'r--',
+  '5' => 'r-x',
+  '6' => 'rw-',
+  '7' => 'rwx'
+}.freeze
 
 def main
   options = ARGV.getopts('arl')
@@ -40,7 +50,7 @@ end
 def render_list(file_names)
   file_details = generate_file_details(file_names)
   width_options = generate_width_options(file_details)
-  total_blocks = file_details.map { |file_detail| file_detail[:stat] }.sum(&:blocks)
+  total_blocks = file_details.sum { |file_detail| file_detail[:stat].blocks }
   puts "total #{total_blocks}"
   file_details.each do |file_detail|
     puts generate_file_detail_text(file_detail, width_options)
@@ -92,12 +102,12 @@ def generate_file_detail_text(file_detail, width_options)
   size = generate_size_text(file_detail, width_options)
   mtime = generate_mtime_text(file_detail)
   file_name = file_detail[:name]
-  "#{permission} #{nlink} #{owner} #{group} #{size} #{mtime} #{file_name}"
+  [permission, nlink, owner, group, size, mtime, file_name].join(' ')
 end
 
 def generate_permission(file_stat)
   file_type = file_type_char(file_stat.ftype)
-  permission = file_stat.mode.to_s(8)[-3..].chars.map { |c| permission_char(c) }.join
+  permission = file_stat.mode.to_s(8)[-3..].chars.map { |c| PERMISSIONS[c] }.join
   "#{file_type}#{permission}"
 end
 
@@ -106,21 +116,8 @@ def file_type_char(ftype)
   when 'file' then '-'
   when 'directory' then 'd'
   when 'link' then 'l'
-  else ''
+  else ' '
   end
-end
-
-def permission_char(char)
-  {
-    '0' => '---',
-    '1' => '--x',
-    '2' => '-w-',
-    '3' => '-wx',
-    '4' => 'r--',
-    '5' => 'r-x',
-    '6' => 'rw-',
-    '7' => 'rwx'
-  }[char]
 end
 
 def generate_nlink_text(file_detail, width_options)
