@@ -20,7 +20,7 @@ PERMISSIONS = {
 def main
   options = ARGV.getopts('arl')
   file_names = search_file_names(options)
-  options['l'] ? render_long_format_list(file_names) : render_list(file_names)
+  options['l'] ? render_long_format(file_names) : render_short_format(file_names)
 end
 
 def search_file_names(options = {})
@@ -29,10 +29,10 @@ def search_file_names(options = {})
   options['r'] ? filtered_file_names.reverse : filtered_file_names
 end
 
-def render_list(file_names)
+def render_short_format(file_names)
   padding_size = file_names.map(&:length).max + PADDING_MARGIN
-  file_name_nested_array = generate_file_name_nested_array(file_names)
-  file_name_nested_array.each do |row_file_names|
+  file_name_table = generate_file_name_table(file_names)
+  file_name_table.each do |row_file_names|
     row_file_names.each do |file_name|
       print file_name.ljust(padding_size)
     end
@@ -40,14 +40,14 @@ def render_list(file_names)
   end
 end
 
-def generate_file_name_nested_array(file_names)
+def generate_file_name_table(file_names)
   lack_count = file_names.length % COLUMN_SIZE
   filled_file_names = lack_count.positive? ? file_names.concat([''] * (COLUMN_SIZE - lack_count)) : file_names
   row_size = (filled_file_names.length / COLUMN_SIZE)
   filled_file_names.each_slice(row_size).to_a.transpose
 end
 
-def render_long_format_list(file_names)
+def render_long_format(file_names)
   file_details = generate_file_details(file_names)
   width_options = generate_width_options(file_details)
   total_blocks = file_details.sum { |file_detail| file_detail[:stat].blocks }
