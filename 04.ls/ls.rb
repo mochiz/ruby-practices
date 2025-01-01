@@ -20,7 +20,7 @@ PERMISSIONS = {
 def main
   options = ARGV.getopts('arl')
   file_names = search_file_names(options)
-  options['l'] ? render_list(file_names) : render_table(file_names)
+  options['l'] ? render_long_format(file_names) : render_short_format(file_names)
 end
 
 def search_file_names(options = {})
@@ -29,7 +29,7 @@ def search_file_names(options = {})
   options['r'] ? filtered_file_names.reverse : filtered_file_names
 end
 
-def render_table(file_names)
+def render_short_format(file_names)
   padding_size = file_names.map(&:length).max + PADDING_MARGIN
   file_name_table = generate_file_name_table(file_names)
   file_name_table.each do |row_file_names|
@@ -47,7 +47,7 @@ def generate_file_name_table(file_names)
   filled_file_names.each_slice(row_size).to_a.transpose
 end
 
-def render_list(file_names)
+def render_long_format(file_names)
   file_details = generate_file_details(file_names)
   width_options = generate_width_options(file_details)
   total_blocks = file_details.sum { |file_detail| file_detail[:stat].blocks }
